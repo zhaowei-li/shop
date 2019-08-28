@@ -3,10 +3,15 @@
     <el-form class="from" ref="form" status-icon :rules="rules" :model="form" label-width="80px">
       <img class="login-img" src="../assets/avatar.jpg" alt />
       <el-form-item label="用户名" prop="username">
-        <el-input v-model="form.username" placeholder="请输入用户名"></el-input>
+        <el-input @keyup.enter.native="login" v-model="form.username" placeholder="请输入用户名"></el-input>
       </el-form-item>
       <el-form-item label="密码" prop="password">
-        <el-input type="password" v-model="form.password" placeholder="请输入密码"></el-input>
+        <el-input
+          @keyup.enter.native="login"
+          type="password"
+          v-model="form.password"
+          placeholder="请输入密码"
+        ></el-input>
       </el-form-item>
       <el-form-item>
         <el-button type="primary" class="login-btn" @click="login">登陆</el-button>
@@ -50,17 +55,15 @@ export default {
     },
     login () {
       this.$refs.form.validate(valid => {
-        console.log(this.form)
         if (!valid) return
         axios({
           method: 'post',
           url: 'http://localhost:8888/api/private/v1/login',
           data: this.form
         }).then(res => {
-          console.log(res.data)
-          const { meta } = res.data
-          console.log(meta)
+          const { meta, data } = res.data
           if (meta.status === 200) {
+            localStorage.setItem('shop', data.token)
             this.$message({
               message: '登陆成功',
               type: 'success',
