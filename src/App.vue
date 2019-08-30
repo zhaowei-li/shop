@@ -1,6 +1,5 @@
 <template>
   <div id="app">
-    <div id="nav"></div>
     <router-view />
   </div>
 </template>
@@ -15,5 +14,10 @@ body,
 #app {
   width: 100%;
   height: 100%;
+  .el-breadcrumb {
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 10px;
+  }
 }
 </style>

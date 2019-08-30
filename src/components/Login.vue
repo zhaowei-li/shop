@@ -22,8 +22,6 @@
 </template>
 
 <script>
-import axios from 'axios'
-
 export default {
   data () {
     return {
@@ -33,16 +31,29 @@ export default {
       },
       rules: {
         username: [
-          { required: true, message: '请输入用户名', trigger: 'change' },
-          { min: 3, max: 5, message: '长度在 3 到 5 个字符', trigger: 'change' }
+          {
+            required: true,
+            message: '请输入用户名',
+            trigger: ['change', 'blur']
+          },
+          {
+            min: 3,
+            max: 5,
+            message: '长度在 3 到 5 个字符',
+            trigger: ['change', 'blur']
+          }
         ],
         password: [
-          { required: true, message: '请输入密码', trigger: 'change' },
+          {
+            required: true,
+            message: '请输入密码',
+            trigger: ['change', 'blur']
+          },
           {
             min: 6,
             max: 12,
             message: '长度在 6 到 12 个字符',
-            trigger: 'change'
+            trigger: ['change', 'blur']
           }
         ]
       }
@@ -50,37 +61,42 @@ export default {
   },
   methods: {
     resetForm () {
-      console.log(this.$refs.form)
       this.$refs.form.resetFields()
     },
-    login () {
-      this.$refs.form.validate(valid => {
-        if (!valid) return
-        axios({
-          method: 'post',
-          url: 'http://localhost:8888/api/private/v1/login',
-          data: this.form
-        }).then(res => {
-          const { meta, data } = res.data
-          if (meta.status === 200) {
-            localStorage.setItem('shop', data.token)
-            this.$message({
-              message: '登陆成功',
-              type: 'success',
-              info: 1000
-            })
-            this.$router.push({ name: 'index' })
-          } else {
-            this.$message.error('登陆失败')
-          }
-        })
-      })
+    async login () {
+      try {
+        await this.$refs.form.validate()
+        const { data, meta } = await this.$axios.post('login', this.form)
+        if (meta.status === 200) {
+          localStorage.setItem('shop', data.token)
+          this.$message.success(meta.msg)
+          this.$router.push({ name: 'index' })
+        } else {
+          this.$message.error(meta.msg)
+        }
+      } catch (e) {
+        console.log(e)
+      }
+
+      // this.$refs.form.validate(valid => {
+      //   if (!valid) return
+      //   this.$axios.post('login', this.form).then(res => {
+      //     const { meta, data } = res
+      //     if (meta.status === 200) {
+      //       localStorage.setItem('shop', data.token)
+      //       this.$message.success('登陆成功')
+      //       this.$router.push({ name: 'index' })
+      //     } else {
+      //       this.$message.error('登陆失败')
+      //     }
+      //   })
+      // })
     }
   }
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .login {
   width: 100%;
   height: 100%;
