@@ -43,7 +43,13 @@
               size="small"
               @click="del(obj.row.id)"
             ></el-button>
-            <el-button type="success" icon="el-icon-check" plain size="small">分配角色</el-button>
+            <el-button
+              type="success"
+              icon="el-icon-check"
+              plain
+              size="small"
+              @click="distribution(obj.row)"
+            >分配角色</el-button>
           </el-row>
         </template>
       </el-table-column>
@@ -112,6 +118,28 @@
         <el-button type="primary" @click="addlist">确 定</el-button>
       </span>
     </el-dialog>
+    <!-- 分配权限 -->
+    <el-dialog title="分配权限" :visible.sync="showFlag" width="30%">
+      <el-form class="from" ref="formList" status-icon :model="formList" label-width="80px">
+        <el-form-item label="用户名">
+          <el-tag>{{ formList.username }}</el-tag>
+        </el-form-item>
+        <el-form-item label="角色列表">
+          <el-select v-model="formList.rid">
+            <el-option
+              v-for="item in options"
+              :label="item.roleName"
+              :key="item.id"
+              :value="item.id"
+            ></el-option>
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="showFlag = false">取 消</el-button>
+        <el-button type="primary" @click="addRole">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -119,6 +147,7 @@
 export default {
   data () {
     return {
+      showFlag: false,
       list: [],
       searchList: '',
       pagenum: 1,
@@ -180,7 +209,13 @@ export default {
         password: '',
         email: '',
         mobile: ''
-      }
+      },
+      formList: {
+        id: '',
+        username: '',
+        rid: ''
+      },
+      options: []
     }
   },
   created () {
@@ -239,14 +274,6 @@ export default {
       this.query = this.searchList
       this.render()
     },
-    // async del (id) {
-    //   const { meta } = await this.$axios.delete(`users/${id}`)
-    //   if (meta.status === 200) {
-    //     this.$message.success(meta.msg)
-    //     this.pagenum = 1
-    //     this.render()
-    //   }
-    // }
     async del (id) {
       try {
         await this.$confirm('亲，请确认是否删除', '温馨提示', {
@@ -315,6 +342,40 @@ export default {
         }
       } catch (e) {
         console.log(e)
+      }
+    },
+    async distribution (row) {
+      this.formList.id = row.id
+      this.formList.username = row.username
+      this.showFlag = true
+
+      const res = await this.$axios.get(`users/${row.id}`)
+      if (res.meta.status === 200) {
+        if (res.data.rid === -1) {
+          this.formList.rid = ''
+        } else {
+          this.formList.rid = res.data.rid
+        }
+      } else {
+        this.$message.error(res.meta.msg)
+      }
+
+      const { meta, data } = await this.$axios.get('roles')
+      if (meta.status === 200) {
+        this.options = data
+      } else {
+        this.$message.error(meta.msg)
+      }
+    },
+    async addRole () {
+      const { id, rid } = this.formList
+      const { meta } = await this.$axios.put(`users/${id}/role`, { rid })
+      if (meta.status === 200) {
+        this.showFlag = false
+        this.$message.success(meta.msg)
+        this.render()
+      } else {
+        this.$message.error(meta.msg)
       }
     }
   }
