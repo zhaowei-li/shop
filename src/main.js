@@ -4,9 +4,21 @@ import router from './router'
 import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
 import axios from 'axios'
+import moment from 'moment'
+import VueQuillEditor from 'vue-quill-editor'
+
+// require styles
+import 'quill/dist/quill.core.css'
+import 'quill/dist/quill.snow.css'
+import 'quill/dist/quill.bubble.css'
+
+Vue.use(VueQuillEditor /* { default global options } */)
 
 Vue.config.productionTip = false
 Vue.use(ElementUI)
+Vue.filter('dateFilter', value => {
+  return moment(value * 1000).format('YYYY-MM-DD HH:mm:ss')
+})
 axios.defaults.baseURL = 'http://localhost:8888/api/private/v1/'
 // 添加请求拦截器, 每次只要请求了, 都会被拦截到
 axios.interceptors.request.use(
